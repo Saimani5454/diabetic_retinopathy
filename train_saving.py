@@ -3,7 +3,9 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
+from sklearn.calibration import CalibratedClassifierCV
 import pickle
+import time
 
 # Load dataset
 df = pd.read_csv('pronostico_dataset (1).csv', sep=';')
@@ -27,15 +29,33 @@ df['prognosis'] = label_encoder.fit_transform(df['prognosis'])
 # Split data
 X = df.drop('prognosis', axis=1)
 y = df['prognosis']
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# ✅ Speed-up for testing: sample smaller training set
+DEBUG_MODE = True  # Set to False for full training
+if DEBUG_MODE:
+    X_train = X_train.sample(200, random_state=42)
+    y_train = y_train.loc[X_train.index]
 
 # Train SVM
-model = SVC(kernel='rbf', probability=True, random_state=42)
-model.fit(X_train, y_train)
+start_time = time.time()
+
+# Use probability=False for speed, wrap later if needed
+svm_model = SVC(kernel='rbf', probability=False, random_state=42)
+svm_model.fit(X_train, y_train)
+
+# If probabilities are required, calibrate the model
+calibrated_model = CalibratedClassifierCV(svm_model, cv=3)
+calibrated_model.fit(X_train, y_train)
+
+end_time = time.time()
+print(f"Training completed in {end_time - start_time:.2f} seconds")
 
 # Save model, scaler, and label encoder
 with open('svm_model.sav', 'wb') as f:
-    pickle.dump(model, f)
+    pickle.dump(calibrated_model, f)
 
 with open('scaler.sav', 'wb') as f:
     pickle.dump(scaler, f)
