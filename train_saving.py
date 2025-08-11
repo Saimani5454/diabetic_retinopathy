@@ -1,10 +1,9 @@
-# training_and_saving_svm.py
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
-from pickle import dump
+import pickle
 
 # Load dataset
 df = pd.read_csv('pronostico_dataset (1).csv', sep=';')
@@ -30,12 +29,10 @@ X = df.drop('prognosis', axis=1)
 y = df['prognosis']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Train SVM with RBF kernel and probability enabled
+# Train SVM
 model = SVC(kernel='rbf', probability=True, random_state=42)
 model.fit(X_train, y_train)
 
-# Save model and scaler
-dump(model, open('svm_model.sav', 'wb'))
-dump(scaler, open('scaler.sav', 'wb'))
-
-print("✅ SVM model and scaler saved: svm_model.sav, scaler.sav")
+# Save model, scaler, and label encoder
+with open('svm_model.sav', 'wb') as f:
+    pickle.dump(mo
