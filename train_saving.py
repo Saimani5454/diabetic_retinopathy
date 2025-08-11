@@ -35,4 +35,12 @@ model.fit(X_train, y_train)
 
 # Save model, scaler, and label encoder
 with open('svm_model.sav', 'wb') as f:
-    pickle.dump(mo
+    pickle.dump(model, f)
+
+with open('scaler.sav', 'wb') as f:
+    pickle.dump(scaler, f)
+
+with open('label_encoder.sav', 'wb') as f:
+    pickle.dump(label_encoder, f)
+
+print("Model, scaler, and label encoder saved successfully!")
